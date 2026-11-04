@@ -1,2 +1,2 @@
 # TuSalud
-Trabajo de Manuel, Sofia, Rodrigo y Fabian.
+Trabajo de Manuel Pintaluba, Sofia Cedres, Rodrigo Alonso y Fabian Guillermo.
