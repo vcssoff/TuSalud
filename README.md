@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/img/logo.png" alt="Logo TuSalud" width="220" />
+  <img src="Docs/img/logo.png" alt="Logo TuSalud" width="220" />
 </p>
 
 <h1 align="center">TuSalud</h1>
