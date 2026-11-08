@@ -1,0 +1,16 @@
+# Ignore a specific file
+secret_token.txt
+
+# Ignore an entire folder (always add a trailing slash)
+node_modules/
+/build/
+
+# Ignore all files with a specific extension (using a wildcard)
+*.log
+*.exe
+
+# Ignore environment variable files containing API keys
+.env
+
+# Maven build target
+target/
