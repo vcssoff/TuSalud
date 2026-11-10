@@ -25,7 +25,7 @@ INSERT INTO USUARIOS (id_usuario, id_rol, nombre, correo, contrasenia_hash, fech
 VALUES (2, 2, 'Dra. Valentina Silva', 'medico@tusalud.com', '$2a$10$a0W1c1X4y9Z7e8q2w3e4r5t6y7u8i9o0p1a2s3d4f5g6h7j8k9l0m', '1980-03-22', 'FEMENINO', 'Cardiología', 'MED-48291')
 ON DUPLICATE KEY UPDATE especialidad = 'Cardiología';
 
--- 4. 13 Mediciones Clínicas Reales de Hipertensión (Presión Sistólica, Diastólica y Pulso)
+-- 4. 20 Mediciones Clínicas de Hipertensión (Presión Sistólica, Diastólica y Pulso - Cumple R11)
 DELETE FROM MEDICIONES WHERE id_usuario = 1;
 
 INSERT INTO MEDICIONES (id_usuario, fecha_hora, presion_sistolica, presion_diastolica, frecuencia_cardiaca) VALUES
@@ -40,7 +40,14 @@ INSERT INTO MEDICIONES (id_usuario, fecha_hora, presion_sistolica, presion_diast
 (1, '2026-09-10 18:43:00', 148, 88, 68),
 (1, '2026-09-22 21:21:00', 132, 88, 70),
 (1, '2026-09-28 17:14:00', 133, 85, 73),
+(1, '2026-10-04 08:30:00', 138, 87, 74),
+(1, '2026-10-10 19:15:00', 145, 90, 80),
 (1, '2026-10-16 07:45:00', 126, 81, 71),
+(1, '2026-10-22 09:05:00', 130, 84, 72),
+(1, '2026-10-29 18:40:00', 142, 89, 79),
+(1, '2026-11-02 08:15:00', 136, 86, 75),
+(1, '2026-11-05 21:30:00', 149, 93, 82),
+(1, '2026-11-08 10:20:00', 128, 83, 70),
 (1, '2026-11-09 20:10:00', 140, 85, 68);
 
 -- 5. Recomendaciones Clínicas Iniciales Personalizadas (Hipertensión)
