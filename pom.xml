@@ -1,3 +1,4 @@
+<!-- pom.xml -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -14,39 +15,53 @@
     </properties>
 
     <dependencies>
-        <!-- MySQL Connector -->
+        <!-- Servidor Web Embebido Javalin 6.x -->
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>6.3.0</version>
+        </dependency>
+
+        <!-- Logger SLF4J requerido por Javalin/Jetty -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.16</version>
+        </dependency>
+
+        <!-- Jackson para serialización JSON automática en Javalin -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.17.2</version>
+        </dependency>
+
+        <!-- MySQL Connector/J para conexión JDBC con Railway -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <version>9.1.0</version>
         </dependency>
 
-        <!-- BCrypt para hashing de contraseñas -->
+        <!-- BCrypt para hashing seguro de contraseñas (R3) -->
         <dependency>
             <groupId>org.mindrot</groupId>
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
 
-        <!-- JFreeChart para gráficos estadísticos -->
-        <dependency>
-            <groupId>org.jfree</groupId>
-            <artifactId>jfreechart</artifactId>
-            <version>1.5.4</version>
-        </dependency>
-
-        <!-- Dotenv para variables de entorno seguras -->
+        <!-- Dotenv para lectura de variables de entorno locales (R10) -->
         <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>dotenv-java</artifactId>
             <version>3.0.0</version>
         </dependency>
 
-        <!-- FlatLaf para UI moderna en Swing -->
+        <!-- JFreeChart (mantenido para compatibilidad con AnalisisService) -->
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>3.5.4</version>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
         </dependency>
 
         <!-- JUnit 5 para pruebas unitarias -->
@@ -73,6 +88,7 @@
                     <mainClass>org.tusalud.Main</mainClass>
                 </configuration>
             </plugin>
+            <!-- Empaquetado Fat JAR ejecutable para Docker y Render -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>

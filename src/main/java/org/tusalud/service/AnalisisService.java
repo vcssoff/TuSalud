@@ -1,9 +1,12 @@
+// src/main/java/org/tusalud/service/AnalisisService.java
 package org.tusalud.service;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.category.DefaultCategoryDataset;
+import org.tusalud.exception.TuSaludException;
+import org.tusalud.model.ComparacionBiometrica;
 import org.tusalud.model.Medicion;
 import org.tusalud.model.Recomendacion;
 
@@ -11,7 +14,41 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Servicio de lógica clínica, validación biométrica y cálculo de indicadores (Cumple R4, R5 y R8).
+ */
 public class AnalisisService implements Promedio {
+
+    /**
+     * Valida que los datos biométricos estén dentro de rangos biológicamente posibles (Cumple R8).
+     * Lanza TuSaludException con mensaje claro para el usuario si algún valor es inválido.
+     */
+    public void validarMedicion(Medicion m) throws TuSaludException {
+        if (m == null) {
+            throw new TuSaludException("No se recibieron datos de la medición.");
+        }
+        if (m.getPeso() == null && m.getAltura() == null && m.getFrecuenciaCardiaca() == null && m.getGlucosaSangre() == null && m.getPresionSistolica() == null && m.getPresionDiastolica() == null) {
+            throw new TuSaludException("Debes ingresar al menos un valor biométrico permitido por tu perfil médico.");
+        }
+        if (m.getPeso() != null && (m.getPeso() < 20.0 || m.getPeso() > 400.0)) {
+            throw new TuSaludException("Valor de peso biológicamente inválido (" + m.getPeso() + " kg). Debe estar entre 20 kg y 400 kg.");
+        }
+        if (m.getAltura() != null && (m.getAltura() < 0.50 || m.getAltura() > 2.50)) {
+            throw new TuSaludException("Valor de altura biológicamente inválido (" + m.getAltura() + " m). Debe estar entre 0.50 m y 2.50 m.");
+        }
+        if (m.getFrecuenciaCardiaca() != null && (m.getFrecuenciaCardiaca() < 30 || m.getFrecuenciaCardiaca() > 250)) {
+            throw new TuSaludException("Frecuencia cardíaca fuera de rango biológico (" + m.getFrecuenciaCardiaca() + " bpm). Debe estar entre 30 y 250 bpm.");
+        }
+        if (m.getGlucosaSangre() != null && (m.getGlucosaSangre() < 20.0 || m.getGlucosaSangre() > 600.0)) {
+            throw new TuSaludException("Nivel de glucosa fuera de rango biológico (" + m.getGlucosaSangre() + " mg/dL). Debe estar entre 20 y 600 mg/dL.");
+        }
+        if (m.getPresionSistolica() != null && (m.getPresionSistolica() < 60 || m.getPresionSistolica() > 300)) {
+            throw new TuSaludException("Presión sistólica fuera de rango biológico (" + m.getPresionSistolica() + " mmHg). Debe estar entre 60 y 300 mmHg.");
+        }
+        if (m.getPresionDiastolica() != null && (m.getPresionDiastolica() < 40 || m.getPresionDiastolica() > 200)) {
+            throw new TuSaludException("Presión diastólica fuera de rango biológico (" + m.getPresionDiastolica() + " mmHg). Debe estar entre 40 y 200 mmHg.");
+        }
+    }
 
     @Override
     public double calcularCardiaco(List<Medicion> mediciones) {
@@ -175,7 +212,7 @@ public class AnalisisService implements Promedio {
         );
     }
 
-    public org.tusalud.model.ComparacionBiometrica compararMediciones(Medicion m1, Medicion m2) {
+    public ComparacionBiometrica compararMediciones(Medicion m1, Medicion m2) {
         if (m1 == null || m2 == null) return null;
 
         Medicion ant = m1;
@@ -185,7 +222,7 @@ public class AnalisisService implements Promedio {
             post = m1;
         }
 
-        org.tusalud.model.ComparacionBiometrica comp = new org.tusalud.model.ComparacionBiometrica();
+        ComparacionBiometrica comp = new ComparacionBiometrica();
         comp.setMedicionAnterior(ant);
         comp.setMedicionPosterior(post);
 

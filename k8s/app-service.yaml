@@ -1,0 +1,16 @@
+# k8s/app-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tusalud-service
+  labels:
+    app: tusalud
+spec:
+  type: NodePort
+  selector:
+    app: tusalud
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30080

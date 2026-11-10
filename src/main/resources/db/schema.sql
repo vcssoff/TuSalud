@@ -1,16 +1,24 @@
--- Esquema Relacional de TuSalud (MySQL 8.0+)
-CREATE DATABASE IF NOT EXISTS railway;
-USE railway;
+-- src/main/resources/db/schema.sql
+CREATE TABLE IF NOT EXISTS ROLES (
+    id_rol INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    descripcion VARCHAR(200) NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS USUARIOS (
     id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    id_rol INT NOT NULL DEFAULT 1,
     nombre VARCHAR(100) NOT NULL,
     correo VARCHAR(150) NOT NULL UNIQUE,
     contrasenia_hash VARCHAR(255) NOT NULL,
     fecha_nacimiento DATE NOT NULL,
     genero VARCHAR(20) NOT NULL,
     perfil_medico VARCHAR(100) NULL,
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    especialidad VARCHAR(100) NULL,
+    matricula VARCHAR(50) NULL,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usuarios_rol FOREIGN KEY (id_rol)
+        REFERENCES ROLES (id_rol) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS MEDICIONES (
@@ -21,10 +29,12 @@ CREATE TABLE IF NOT EXISTS MEDICIONES (
     altura DECIMAL(3,2) NULL,
     frecuencia_cardiaca INT NULL,
     glucosa_sangre DECIMAL(5,2) NULL,
+    presion_sistolica INT NULL,
+    presion_diastolica INT NULL,
     CONSTRAINT fk_mediciones_usuario FOREIGN KEY (id_usuario)
         REFERENCES USUARIOS (id_usuario) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_al_menos_un_dato CHECK (
-        peso IS NOT NULL OR altura IS NOT NULL OR frecuencia_cardiaca IS NOT NULL OR glucosa_sangre IS NOT NULL
+        peso IS NOT NULL OR altura IS NOT NULL OR frecuencia_cardiaca IS NOT NULL OR glucosa_sangre IS NOT NULL OR presion_sistolica IS NOT NULL OR presion_diastolica IS NOT NULL
     )
 );
 

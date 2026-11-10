@@ -1,0 +1,13 @@
+# k8s/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tusalud-config
+  labels:
+    app: tusalud
+data:
+  PORT: "8080"
+  DB_HOST: "sakura.proxy.rlwy.net"
+  DB_PORT: "19832"
+  DB_NAME: "railway"
+  DB_SSL: "true"

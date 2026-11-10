@@ -1,0 +1,429 @@
+<!-- src/main/resources/public/dashboard.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel del Paciente — TuSalud</title>
+    <link rel="icon" type="image/png" href="/img/logo.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f8fb; }
+        .navbar-clinical { background-color: #0d3b66; }
+        .kpi-card {
+            border: none;
+            border-radius: 0.9rem;
+            box-shadow: 0 4px 14px rgba(13, 59, 102, 0.07);
+        }
+        .field-locked {
+            background-color: #f1f3f5 !important;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body data-page="dashboard">
+
+    <!-- Barra de Navegación Superior -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-clinical shadow-sm sticky-top">
+        <div class="container-fluid px-3 px-lg-4">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="/dashboard.html">
+                <img src="/img/logo.png" alt="Logo TuSalud" width="36" height="36" class="me-2 rounded bg-white p-1">
+                <span>TuSalud</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navDashboard">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navDashboard">
+                <div class="ms-auto d-flex flex-wrap align-items-center gap-2 mt-2 mt-lg-0">
+                    <span class="badge bg-info text-dark px-3 py-2" id="badgePerfilActual">Cargando perfil...</span>
+                    <a href="/medico.html" id="btnIrPanelMedico" class="btn btn-warning btn-sm fw-bold d-none">
+                        <i class="bi bi-hospital me-1"></i>Panel Médico
+                    </a>
+                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalCuestionario">
+                        <i class="bi bi-clipboard2-pulse me-1"></i>Cuestionario Médico
+                    </button>
+                    <button class="btn btn-outline-light btn-sm" data-bs-toggle="modal" data-bs-target="#modalPerfilUsuario">
+                        <i class="bi bi-person-gear me-1"></i><span id="navUserName">Mi Cuenta</span>
+                    </button>
+                    <button class="btn btn-danger btn-sm" id="btnLogout">
+                        <i class="bi bi-box-arrow-right me-1"></i>Salir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-3 px-lg-4 py-4">
+        <!-- Contenedor de Alertas Globales (R8) -->
+        <div id="alertContainer"></div>
+
+        <!-- Tarjetas de Indicadores Biométricos (KPIs) -->
+        <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+                <div class="card kpi-card p-3 bg-white h-100 border-start border-4 border-primary">
+                    <div class="text-muted small fw-semibold">Último IMC Calculado</div>
+                    <div class="fs-3 fw-bold text-primary mt-1" id="kpiImc">--</div>
+                    <div class="small text-secondary" id="kpiImcEstado">kg/m²</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card kpi-card p-3 bg-white h-100 border-start border-4 border-danger">
+                    <div class="text-muted small fw-semibold">Frecuencia Cardíaca Promedio</div>
+                    <div class="fs-3 fw-bold text-danger mt-1" id="kpiCardiaco">--</div>
+                    <div class="small text-secondary">pulsaciones / min (bpm)</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card kpi-card p-3 bg-white h-100 border-start border-4 border-success">
+                    <div class="text-muted small fw-semibold">Glucosa Promedio en Sangre</div>
+                    <div class="fs-3 fw-bold text-success mt-1" id="kpiGlucosa">--</div>
+                    <div class="small text-secondary">mg/dL</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card kpi-card p-3 bg-white h-100 border-start border-4 border-info">
+                    <div class="text-muted small fw-semibold">Total Mediciones Registradas</div>
+                    <div class="fs-3 fw-bold text-dark mt-1" id="kpiTotal">0</div>
+                    <div class="small text-secondary" id="kpiRolDescripcion">Seguimiento activo</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Columna Izquierda: Formulario Dinámico según Perfil Médico (RF-03 y RF-12) -->
+            <div class="col-12 col-xl-4">
+                <div class="card kpi-card bg-white p-3 p-sm-4 mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-plus-circle-fill text-primary me-2"></i>Nueva Medición Clínica</h5>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Los campos se habilitan o bloquean automáticamente según tu perfil médico configurado.
+                    </p>
+
+                    <form id="formNuevaMedicion" novalidate>
+                        <!-- Peso -->
+                        <div class="mb-3" id="groupPeso">
+                            <label class="form-label fw-semibold small d-flex justify-content-between">
+                                <span>Peso Corporal (kg) <small class="text-muted">(20 - 400 kg)</small></span>
+                                <span id="lockBadgePeso" class="badge bg-secondary d-none"><i class="bi bi-lock-fill"></i> Bloqueado</span>
+                            </label>
+                            <input type="number" step="0.1" id="inputPeso" class="form-control" placeholder="Ej: 76.5">
+                            <div class="form-text text-danger small d-none" id="motivoPeso"></div>
+                        </div>
+
+                        <!-- Altura -->
+                        <div class="mb-3" id="groupAltura">
+                            <label class="form-label fw-semibold small d-flex justify-content-between">
+                                <span>Altura (m) <small class="text-muted">(0.50 - 2.50 m)</small></span>
+                                <span id="lockBadgeAltura" class="badge bg-secondary d-none"><i class="bi bi-lock-fill"></i> Bloqueado</span>
+                            </label>
+                            <input type="number" step="0.01" id="inputAltura" class="form-control" placeholder="Ej: 1.75">
+                            <div class="form-text text-danger small d-none" id="motivoAltura"></div>
+                        </div>
+
+                        <!-- Frecuencia Cardíaca -->
+                        <div class="mb-3" id="groupFC">
+                            <label class="form-label fw-semibold small d-flex justify-content-between">
+                                <span>Frecuencia Cardíaca (bpm) <small class="text-muted">(30 - 250 bpm)</small></span>
+                                <span id="lockBadgeFC" class="badge bg-secondary d-none"><i class="bi bi-lock-fill"></i> Bloqueado</span>
+                            </label>
+                            <input type="number" step="1" id="inputFC" class="form-control" placeholder="Ej: 72">
+                            <div class="form-text text-danger small d-none" id="motivoFC"></div>
+                        </div>
+
+                        <!-- Glucosa en Sangre -->
+                        <div class="mb-3" id="groupGlucosa">
+                            <label class="form-label fw-semibold small d-flex justify-content-between">
+                                <span>Glucosa en Sangre (mg/dL) <small class="text-muted">(20 - 600 mg/dL)</small></span>
+                                <span id="lockBadgeGlucosa" class="badge bg-secondary d-none"><i class="bi bi-lock-fill"></i> Bloqueado</span>
+                            </label>
+                            <input type="number" step="0.1" id="inputGlucosa" class="form-control" placeholder="Ej: 94.0">
+                            <div class="form-text text-danger small d-none" id="motivoGlucosa"></div>
+                        </div>
+
+                        <!-- Presión Arterial (Sístole / Diástole) -->
+                        <div class="mb-3" id="groupPresion">
+                            <label class="form-label fw-semibold small d-flex justify-content-between">
+                                <span>Presión Arterial (mmHg) <small class="text-muted">(Sístole / Diástole)</small></span>
+                                <span id="lockBadgePresion" class="badge bg-secondary d-none"><i class="bi bi-lock-fill"></i> Bloqueado</span>
+                            </label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" step="1" id="inputSistole" class="form-control" placeholder="Sístole (ej: 130)">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" step="1" id="inputDiastole" class="form-control" placeholder="Diástole (ej: 85)">
+                                </div>
+                            </div>
+                            <div class="form-text text-danger small d-none" id="motivoPresion"></div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 fw-bold py-2">
+                            <i class="bi bi-save me-1"></i>Registrar Medición y Analizar
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Comparador Biométrico entre 2 Mediciones -->
+                <div class="card kpi-card bg-white p-3 p-sm-4">
+                    <h6 class="fw-bold mb-2"><i class="bi bi-arrow-left-right text-primary me-2"></i>Comparar Dos Mediciones</h6>
+                    <div class="row g-2 mb-2">
+                        <div class="col-6">
+                            <label class="small text-muted">Medición Base</label>
+                            <select id="selectComp1" class="form-select form-select-sm"></select>
+                        </div>
+                        <div class="col-6">
+                            <label class="small text-muted">Medición a Comparar</label>
+                            <select id="selectComp2" class="form-select form-select-sm"></select>
+                        </div>
+                    </div>
+                    <button id="btnComparar" class="btn btn-outline-primary btn-sm w-100 mb-2">
+                        <i class="bi bi-calculator me-1"></i>Calcular Variación (Δ)
+                    </button>
+                    <pre id="resultadoComparacion" class="bg-light p-2 rounded small mb-0 d-none" style="white-space: pre-wrap;"></pre>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Gráfico Chart.js, Tabla CRUD de Mediciones y Recomendaciones -->
+            <div class="col-12 col-xl-8">
+                <!-- Gráfico Interactivo Chart.js -->
+                <div class="card kpi-card bg-white p-3 p-sm-4 mb-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Evolución Biométrica</h5>
+                        <select id="filtroGrafico" class="form-select form-select-sm w-auto">
+                            <option value="TODAS">Todas las métricas permitidas</option>
+                            <option value="PESO">Peso Corporal (kg)</option>
+                            <option value="IMC">Índice de Masa Corporal (IMC)</option>
+                            <option value="CARDIACO">Frecuencia Cardíaca (bpm)</option>
+                            <option value="GLUCOSA">Glucosa en Sangre (mg/dL)</option>
+                        </select>
+                    </div>
+                    <div style="height: 290px;">
+                        <canvas id="chartEvolucion"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabla Historial de Mediciones (CRUD Completo: Editar y Eliminar) -->
+                <div class="card kpi-card bg-white p-3 p-sm-4 mb-4">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-table text-primary me-2"></i>Historial de Mediciones</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle small mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Fecha y Hora</th>
+                                    <th>Presión (mmHg)</th>
+                                    <th>Pulso (bpm)</th>
+                                    <th>Peso (kg)</th>
+                                    <th>Altura (m)</th>
+                                    <th>IMC</th>
+                                    <th>Glucosa (mg/dL)</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaMedicionesBody">
+                                <tr><td colspan="9" class="text-center text-muted py-3">Sin mediciones registradas aún.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Recomendaciones Clínicas y Notas de Salud (CRUD Completo) -->
+                <div class="card kpi-card bg-white p-3 p-sm-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h5 class="fw-bold mb-0"><i class="bi bi-chat-heart-fill text-success me-2"></i>Recomendaciones y Alertas Clínicas</h5>
+                        <button class="btn btn-outline-success btn-sm" data-bs-toggle="collapse" data-bs-target="#collapseNuevaNota">
+                            <i class="bi bi-plus-lg me-1"></i>Añadir Nota Personal
+                        </button>
+                    </div>
+                    <div class="collapse mb-3" id="collapseNuevaNota">
+                        <form id="formNuevaRecomendacion" class="row g-2 bg-light p-2 rounded">
+                            <div class="col-sm-3">
+                                <select id="recTipo" class="form-select form-select-sm">
+                                    <option value="PERSONAL">Nota Personal</option>
+                                    <option value="SINTOMA">Síntoma / Control</option>
+                                    <option value="MEDICACION">Medicación</option>
+                                </select>
+                            </div>
+                            <div class="col-sm-7">
+                                <input type="text" id="recMensaje" class="form-control form-control-sm" placeholder="Escribe una observación o recordatorio clínico..." required>
+                            </div>
+                            <div class="col-sm-2">
+                                <button type="submit" class="btn btn-success btn-sm w-100">Guardar</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div id="listaRecomendaciones" class="list-group list-group-flush small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cuestionario Médico Inicial (RF-03 y RF-12) -->
+    <div class="modal fade" id="modalCuestionario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-clipboard2-pulse me-2"></i>Cuestionario Médico de Personalización</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formCuestionario">
+                    <div class="modal-body">
+                        <p class="small text-muted">
+                            Selecciona tu condición o motivo de control. TuSalud habilitará únicamente las métricas biométricas relevantes para tu seguimiento clínico.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">1. ¿Cuál es tu situación de salud actual?</label>
+                            <select id="cuestSituacion" class="form-select">
+                                <option value="HIPERTENSION">Hipertensión diagnosticada</option>
+                                <option value="DIABETES">Diabetes diagnosticada</option>
+                                <option value="AMBAS">Hipertensión y Diabetes diagnosticadas (Monitoreo Dual)</option>
+                                <option value="PREVENTIVO_DUAL">Control preventivo de ambas (Antecedentes / Chequeo integral)</option>
+                                <option value="BIENESTAR" selected>Control preventivo general (Bienestar, peso y condición física)</option>
+                            </select>
+                        </div>
+
+                        <!-- Subpanel Hipertensión -->
+                        <div id="subpanelHipertension" class="border rounded p-3 bg-light mb-3 d-none">
+                            <h6 class="fw-bold text-primary">Módulo de Hipertensión</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Tratamiento actual</label>
+                                    <select id="cuestControlHTA" class="form-select form-select-sm">
+                                        <option value="MEDICAMENTOS">Medicamentos antihipertensivos</option>
+                                        <option value="ALIMENTACION">Cambios en alimentación y ejercicio</option>
+                                        <option value="COMBINADO">Tratamiento combinado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Variables que deseas registrar</label>
+                                    <select id="cuestAlcanceHTA" class="form-select form-select-sm">
+                                        <option value="COMPLETO">Frecuencia Cardíaca + Peso e IMC (Recomendado)</option>
+                                        <option value="SOLO_FC">Únicamente Frecuencia Cardíaca (Pulsaciones)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subpanel Diabetes -->
+                        <div id="subpanelDiabetes" class="border rounded p-3 bg-light mb-3 d-none">
+                            <h6 class="fw-bold text-success">Módulo de Diabetes</h6>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Tratamiento principal</label>
+                                    <select id="cuestControlDBT" class="form-select form-select-sm">
+                                        <option value="ORALES">Medicamentos orales / Alimentación</option>
+                                        <option value="INSULINA">Administración de Insulina</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">Variables que deseas registrar</label>
+                                    <select id="cuestAlcanceDBT" class="form-select form-select-sm">
+                                        <option value="COMPLETO">Glucosa en Sangre + Peso e IMC (Recomendado)</option>
+                                        <option value="SOLO_GLUCOSA">Únicamente Glucosa en Sangre</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subpanel Bienestar -->
+                        <div id="subpanelBienestar" class="border rounded p-3 bg-light mb-2">
+                            <h6 class="fw-bold text-secondary">Módulo de Bienestar y Condición Física</h6>
+                            <label class="form-label small">Objetivo principal de seguimiento</label>
+                            <select id="cuestObjetivoGeneral" class="form-select form-select-sm">
+                                <option value="GENERAL">Bienestar general (Peso, Altura/IMC y Frecuencia Cardíaca)</option>
+                                <option value="PESO">Control exclusivo de Peso corporal y evolución de IMC</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <button type="submit" class="btn btn-success fw-bold">Guardar y Personalizar Panel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Medición (R2 CRUD) -->
+    <div class="modal fade" id="modalEditarMedicion" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Editar Medición #<span id="editMedIdLabel"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formEditarMedicion">
+                    <div class="modal-body">
+                        <input type="hidden" id="editIdMedicion">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Peso (kg)</label>
+                            <input type="number" step="0.1" id="editPeso" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Altura (m)</label>
+                            <input type="number" step="0.01" id="editAltura" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Frecuencia Cardíaca (bpm)</label>
+                            <input type="number" step="1" id="editFC" class="form-control">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Glucosa en Sangre (mg/dL)</label>
+                            <input type="number" step="0.1" id="editGlucosa" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary fw-bold">Guardar Cambios</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar Perfil de Usuario (R2 CRUD Usuario) -->
+    <div class="modal fade" id="modalPerfilUsuario" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Mis Datos Personales</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="formPerfilUsuario">
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Nombre completo</label>
+                            <input type="text" id="perfNombre" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Fecha de nacimiento</label>
+                            <input type="date" id="perfFechaNac" class="form-control" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold">Género</label>
+                            <select id="perfGenero" class="form-select">
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" id="btnEliminarCuenta" class="btn btn-outline-danger btn-sm">Eliminar mi cuenta</button>
+                        <div>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            <button type="submit" class="btn btn-primary fw-bold">Actualizar Datos</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>

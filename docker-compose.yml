@@ -1,0 +1,45 @@
+# docker-compose.yml
+version: "3.9"
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: tusalud-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-tusalud_local_pass}
+      MYSQL_DATABASE: ${DB_NAME:-railway}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/01-crear-tablas.sql:/docker-entrypoint-initdb.d/01-crear-tablas.sql:ro
+      - ./sql/02-datos-prueba.sql:/docker-entrypoint-initdb.d/02-datos-prueba.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  tusalud-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: tusalud-web
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      PORT: 8080
+      DB_HOST: ${DB_HOST:-mysql-db}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-railway}
+      DB_USER: ${DB_USER:-root}
+      DB_PASSWORD: ${DB_PASSWORD:-tusalud_local_pass}
+      DB_SSL: ${DB_SSL:-false}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+volumes:
+  mysql_data:

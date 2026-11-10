@@ -154,6 +154,15 @@ public class PerfilMedicoService {
         return "Este campo no está habilitado para tu perfil médico actual.";
     }
 
+    public static boolean permitePresion(String perfil) {
+        if (perfil == null || perfil.trim().isEmpty()) return true;
+        String p = perfil.trim().toUpperCase();
+        if (p.startsWith("DIABETES") || p.equals(PERFIL_BIENESTAR_PESO)) {
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Sanitiza una medición antes de persistirla en base de datos, garantizando
      * que ningún dato que no influya en las opciones del usuario sea registrado.
@@ -164,5 +173,9 @@ public class PerfilMedicoService {
         if (!permiteAltura(perfil)) m.setAltura(null);
         if (!permiteFrecuencia(perfil)) m.setFrecuenciaCardiaca(null);
         if (!permiteGlucosa(perfil)) m.setGlucosaSangre(null);
+        if (!permitePresion(perfil)) {
+            m.setPresionSistolica(null);
+            m.setPresionDiastolica(null);
+        }
     }
 }

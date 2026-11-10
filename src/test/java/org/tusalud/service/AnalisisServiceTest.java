@@ -107,4 +107,30 @@ public class AnalisisServiceTest {
             service.generarGraficaFiltrada(new ArrayList<>(), "PESO");
         }, "No debe lanzar excepciones cuando la lista de mediciones es nula o vacía");
     }
+
+    @Test
+    public void testValidarMedicion_LanzaTuSaludExceptionAnteValoresImposibles() {
+        Medicion pesoInvalido = new Medicion(1, new Timestamp(System.currentTimeMillis()), 550.0, 1.75, 70, 90.0);
+        assertThrows(org.tusalud.exception.TuSaludException.class, () -> service.validarMedicion(pesoInvalido),
+                "Debe lanzar TuSaludException si el peso supera los 400 kg");
+
+        Medicion fcInvalida = new Medicion(1, new Timestamp(System.currentTimeMillis()), 75.0, 1.75, 310, 90.0);
+        assertThrows(org.tusalud.exception.TuSaludException.class, () -> service.validarMedicion(fcInvalida),
+                "Debe lanzar TuSaludException si la FC supera los 250 bpm");
+
+        Medicion glucosaInvalida = new Medicion(1, new Timestamp(System.currentTimeMillis()), 75.0, 1.75, 70, 5.0);
+        assertThrows(org.tusalud.exception.TuSaludException.class, () -> service.validarMedicion(glucosaInvalida),
+                "Debe lanzar TuSaludException si la glucosa es menor a 20 mg/dL");
+    }
+
+    @Test
+    public void testHerenciaYPolimorfismo_PacienteYMedico() {
+        org.tusalud.model.Usuario paciente = new org.tusalud.model.Paciente(1, "Juan", "juan@test.com", "hash", null, "Masculino", "DIABETES");
+        org.tusalud.model.Usuario medico = new org.tusalud.model.Medico(2, "Dra. Ana", "ana@test.com", "hash", null, "Femenino", "Cardiología", "MSP-999");
+
+        assertFalse(paciente.tieneAccesoPanelMedico(), "El paciente no debe tener acceso al panel médico");
+        assertTrue(medico.tieneAccesoPanelMedico(), "El médico debe tener acceso al panel médico");
+        assertTrue(paciente.getDescripcionRol().contains("Paciente Clínico"));
+        assertTrue(medico.getDescripcionRol().contains("Cardiología"));
+    }
 }

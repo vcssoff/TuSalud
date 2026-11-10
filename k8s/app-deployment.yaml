@@ -1,0 +1,47 @@
+# k8s/app-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tusalud-deployment
+  labels:
+    app: tusalud
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tusalud
+  template:
+    metadata:
+      labels:
+        app: tusalud
+    spec:
+      containers:
+        - name: tusalud-web
+          image: ghcr.io/vcssoff/tusalud:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: tusalud-config
+            - secretRef:
+                name: tusalud-secret
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
