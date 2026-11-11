@@ -17,11 +17,13 @@ public class DatabaseInitializer {
 
     public static boolean inicializarTablas() {
         String dbName = DatabaseConnection.getEnv("DB_NAME", "railway");
-        try (Connection rootConn = DatabaseConnection.getConnectionSinBD();
-             Statement stmtRoot = rootConn.createStatement()) {
-            stmtRoot.execute("CREATE DATABASE IF NOT EXISTS `" + dbName + "`;");
-        } catch (Exception e) {
-            System.err.println("Aviso al verificar/crear base de datos: " + e.getMessage());
+        if (dbName.matches("[A-Za-z0-9_]+")) {
+            try (Connection rootConn = DatabaseConnection.getConnectionSinBD();
+                 Statement stmtRoot = rootConn.createStatement()) {
+                stmtRoot.execute("CREATE DATABASE IF NOT EXISTS `" + dbName + "`;");
+            } catch (Exception e) {
+                System.err.println("Aviso al verificar/crear base de datos: " + e.getMessage());
+            }
         }
 
         try (Connection conn = DatabaseConnection.getConnection();

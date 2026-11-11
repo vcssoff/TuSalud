@@ -1,6 +1,4 @@
 # docker-compose.yml
-version: "3.9"
-
 services:
   mysql-db:
     image: mysql:8.0
@@ -36,7 +34,7 @@ services:
       DB_NAME: ${DB_NAME:-railway}
       DB_USER: ${DB_USER:-root}
       DB_PASSWORD: ${DB_PASSWORD:-tusalud_local_pass}
-      DB_SSL: ${DB_SSL:-false}
+      DB_SSL_MODE: DISABLED
     depends_on:
       mysql-db:
         condition: service_healthy
