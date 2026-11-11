@@ -1,16 +1,76 @@
-# Ignore a specific file
-secret_token.txt
+# Compiled class files
+*.class
 
-# Ignore an entire folder (always add a trailing slash)
-node_modules/
-/build/
-
-# Ignore all files with a specific extension (using a wildcard)
+# Log files
 *.log
+
+# Package Files #
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
 *.exe
 
-# Ignore environment variable files containing API keys
-.env
-
-# Maven build target
+# Maven build directory
 target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+
+# Node / Frontend
+node_modules/
+
+# Secrets and environment variables
+.env
+.env.local
+.env.*.local
+*.env
+secret_token.txt
+secrets.yaml
+secrets.yml
+
+# IDEs and Editors
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-userId
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Kubernetes local overrides / manifests temporales
+*.tmp
+*.temp
