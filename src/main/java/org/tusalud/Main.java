@@ -25,11 +25,6 @@ import java.util.*;
  */
 public class Main {
 
-    private static final IUsuarioDAO usuarioDAO = new UsuarioDAO();
-    private static final IMedicionDAO medicionDAO = new MedicionDAO();
-    private static final IRecomendacionDAO recomendacionDAO = new RecomendacionDAO();
-    private static final AnalisisService analisisService = new AnalisisService();
-
     public static void main(String[] args) {
         System.out.println("====================================================");
         System.out.println("  Iniciando TuSalud Web — Servidor Clínico Javalin  ");
@@ -38,7 +33,17 @@ public class Main {
         DatabaseInitializer.inicializarTablas();
 
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
+        Javalin app = crearApp();
+        app.start(port);
+        System.out.println("Servidor TuSalud activo en: http://localhost:" + port);
+    }
 
+    public static Javalin crearApp() {
+        return crearApp(new UsuarioDAO(), new MedicionDAO(), new RecomendacionDAO(), new AnalisisService());
+    }
+
+    public static Javalin crearApp(IUsuarioDAO usuarioDAO, IMedicionDAO medicionDAO,
+                                   IRecomendacionDAO recomendacionDAO, AnalisisService analisisService) {
         Javalin app = Javalin.create(config -> {
             config.staticFiles.add("/public", Location.CLASSPATH);
             config.http.defaultContentType = "application/json; charset=utf-8";
@@ -48,7 +53,7 @@ public class Main {
         // MANEJO GLOBAL DE EXCEPCIONES (Cumple R8: Sin errores internos al usuario)
         // =========================================================================
         app.exception(TuSaludException.class, (e, ctx) -> {
-            ctx.status(400).json(Map.of("error", e.getMessage()));
+            ctx.status(e.getStatusCode()).json(Map.of("error", e.getMessage()));
         });
 
         app.exception(NumberFormatException.class, (e, ctx) -> {
@@ -93,9 +98,6 @@ public class Main {
             String password = str(body.get("password"));
             String fechaNacStr = str(body.get("fechaNacimiento"));
             String genero = str(body.get("genero"));
-            String rolSolicitado = str(body.get("rol"));
-            String especialidad = str(body.get("especialidad"));
-            String matricula = str(body.get("matricula"));
 
             if (nombre.isEmpty() || correo.isEmpty() || password.isEmpty() || fechaNacStr.isEmpty() || genero.isEmpty()) {
                 throw new TuSaludException("Todos los campos obligatorios deben completarse.");
@@ -117,14 +119,8 @@ public class Main {
                 throw new TuSaludException("La fecha de nacimiento debe tener formato AAAA-MM-DD.");
             }
 
-            Usuario nuevoUsuario;
-            if ("MEDICO".equalsIgnoreCase(rolSolicitado)) {
-                nuevoUsuario = new Medico(0, nombre, correo, null, fechaNac, genero,
-                        especialidad.isEmpty() ? "Medicina General" : especialidad,
-                        matricula.isEmpty() ? "MSP-0000" : matricula);
-            } else {
-                nuevoUsuario = new Paciente(0, nombre, correo, null, fechaNac, genero, null);
-            }
+            // El registro público siempre crea un Paciente; las cuentas médicas se gestionan vía SQL/admin.
+            Usuario nuevoUsuario = new Paciente(0, nombre, correo, null, fechaNac, genero, null);
 
             if (!usuarioDAO.registrar(nuevoUsuario, password)) {
                 throw new TuSaludException("No se pudo registrar el usuario.");
@@ -492,15 +488,13 @@ public class Main {
             ));
         });
 
-        app.start(port);
-        System.out.println("Servidor TuSalud activo en: http://localhost:" + port);
+        return app;
     }
 
     private static Usuario obtenerUsuarioAutenticado(Context ctx) throws TuSaludException {
         Usuario u = ctx.sessionAttribute("usuario");
         if (u == null) {
-            ctx.status(401);
-            throw new TuSaludException("Sesión no iniciada o expirada. Por favor, inicia sesión.");
+            throw new TuSaludException("Sesión no iniciada o expirada. Por favor, inicia sesión.", 401);
         }
         return u;
     }
@@ -508,8 +502,7 @@ public class Main {
     private static Usuario verificarPermisoMedico(Context ctx) throws TuSaludException {
         Usuario u = obtenerUsuarioAutenticado(ctx);
         if (!u.tieneAccesoPanelMedico()) {
-            ctx.status(403);
-            throw new TuSaludException("Acceso denegado: Se requiere rol MEDICO o ADMIN para acceder a este módulo.");
+            throw new TuSaludException("Acceso denegado: Se requiere rol MEDICO o ADMIN para acceder a este módulo.", 403);
         }
         return u;
     }

@@ -45,14 +45,6 @@ async function apiFetch(url, options = {}) {
 // 1. VISTA DE LOGIN Y REGISTRO (index.html)
 // =============================================================================
 function inicializarVistaAuth() {
-    const selectRol = document.getElementById("regRol");
-    const camposMedico = document.getElementById("camposMedicoRegistro");
-    if (selectRol && camposMedico) {
-        selectRol.addEventListener("change", () => {
-            camposMedico.classList.toggle("d-none", selectRol.value !== "MEDICO");
-        });
-    }
-
     const formLogin = document.getElementById("formLogin");
     if (formLogin) {
         formLogin.addEventListener("submit", async (e) => {
@@ -84,9 +76,6 @@ function inicializarVistaAuth() {
                         correo: document.getElementById("regCorreo").value,
                         fechaNacimiento: document.getElementById("regFechaNac").value,
                         genero: document.getElementById("regGenero").value,
-                        rol: document.getElementById("regRol").value,
-                        especialidad: document.getElementById("regEspecialidad").value,
-                        matricula: document.getElementById("regMatricula").value,
                         password: document.getElementById("regPassword").value
                     })
                 });
