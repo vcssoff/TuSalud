@@ -15,7 +15,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests -B
 
 # Etapa 2: Imagen ligera de ejecución (JRE 21 Alpine) con endurecimiento (Hardening)
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 WORKDIR /app
 
 # Instalar curl para el HEALTHCHECK nativo
