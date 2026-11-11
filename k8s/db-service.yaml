@@ -1,0 +1,16 @@
+# k8s/db-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: tusalud-mysql
+  labels:
+    app: tusalud-mysql
+    part-of: tusalud
+spec:
+  type: ClusterIP
+  selector:
+    app: tusalud-mysql
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306

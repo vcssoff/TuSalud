@@ -100,23 +100,33 @@ docker push ghcr.io/vcssoff/tusalud:1.0.0
    ```bash
    minikube start --driver=docker
    ```
-2. Crear el archivo `k8s/secret.yaml` a partir de la plantilla `k8s/secret.yaml.example` con la contraseña real de Railway:
+2. Crear el Secret `tusalud-secret` **sin subir credenciales a Git** (elige una de las dos formas):
+   * **Opción recomendada (por CLI, sin guardar archivo en disco):**
+     ```bash
+     kubectl create secret generic tusalud-secret \
+       --from-literal=MYSQL_ROOT_PASSWORD="TU_PASSWORD_SEGURA" \
+       --from-literal=DB_USER="root" \
+       --from-literal=DB_PASSWORD="TU_PASSWORD_SEGURA"
+     ```
+   * **Alternativa local (archivo ignorado por `.gitignore`):**
+     ```bash
+     cp k8s/secret.yaml.example k8s/secret.yaml
+     # Editar k8s/secret.yaml con tus valores locales (NUNCA hacer git add de k8s/secret.yaml)
+     ```
+3. Crear el ConfigMap `tusalud-sql` con los scripts de inicialización de la base de datos:
    ```bash
-   cp k8s/secret.yaml.example k8s/secret.yaml
+   kubectl create configmap tusalud-sql --from-file=sql/
    ```
-3. Aplicar los manifiestos de Kubernetes (`ConfigMap`, `Secret`, `Deployment` y `Service`):
+4. Validar los manifiestos y aplicarlos en el clúster (`app` + `mysql`):
    ```bash
-   kubectl apply -f k8s/configmap.yaml
-   kubectl apply -f k8s/secret.yaml
-   kubectl apply -f k8s/app-deployment.yaml
-   kubectl apply -f k8s/app-service.yaml
+   kubectl apply --dry-run=client -f k8s/
+   kubectl apply -f k8s/
    ```
-4. Verificar el estado de los Pods y del servicio:
+5. Verificar el estado de los Pods y Services (todos deben quedar en `Running` y `1/1`):
    ```bash
-   kubectl get pods -l app=tusalud
-   kubectl get svc tusalud-service
+   kubectl get pods,svc
    ```
-5. Abrir la aplicación desplegada en Minikube:
+6. Abrir la aplicación desplegada en Minikube:
    ```bash
    minikube service tusalud-service --url
    ```
@@ -136,7 +146,7 @@ docker push ghcr.io/vcssoff/tusalud:1.0.0
 ---
 
 ### Captura 2: Tablas creadas y pobladas en Railway (MySQL 8.0)
-*Muestra el panel **Data** de Railway con las 4 tablas (`ROLES`, `USUARIOS`, `MEDICIONES`, `RECOMENDACIONES`) y los datos reales registrados.*
+*Muestra el panel **Data** de Railway con las 4 tablas (`ROLES`, `USUARIOS`, `MEDICIONES`, `RECOMENDACIONES`) y los datos de demostración registrados.*
 
 ![Captura 2 - Base de datos Railway](img/captura-02-railway.png)
 
@@ -150,7 +160,7 @@ docker push ghcr.io/vcssoff/tusalud:1.0.0
 ---
 
 ### Captura 4: Aplicación Web en Producción (Login y Dashboard de Paciente con Chart.js)
-*Muestra el acceso a la plataforma pública en la nube y el panel clínico interactivo con las 21 mediciones biométricas de hipertensión de Francisco Pintaluba, la gráfica evolutiva con Chart.js y la restricción por perfil médico.*
+*Muestra el acceso a la plataforma pública en la nube y el panel clínico interactivo con las 21 mediciones biométricas de hipertensión de Paciente Demo, la gráfica evolutiva con Chart.js y la restricción por perfil médico.*
 
 ![Captura 4A - Pantalla de Acceso](img/captura-04-login.png)
 

@@ -39,8 +39,11 @@ node_modules/
 .env.*.local
 *.env
 secret_token.txt
+secret.yaml
+secret.yml
 secrets.yaml
 secrets.yml
+k8s/secret.yaml
 
 # IDEs and Editors
 # IntelliJ IDEA
