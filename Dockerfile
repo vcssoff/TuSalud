@@ -5,7 +5,7 @@
 # ==============================================================================
 
 # Etapa 1: Compilación y empaquetado con Maven y JDK 21
-FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+FROM maven:3.9-eclipse-temurin-26-alpine AS builder
 WORKDIR /app
 
 COPY pom.xml .
