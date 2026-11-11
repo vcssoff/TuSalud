@@ -1,26 +1,33 @@
 # Requisitos funcionales
 
-* **RF-01 — Registro de usuarios:** El sistema deberá permitir a los usuarios crear una cuenta proporcionando sus datos personales, incluyendo nombre, apellido, correo electrónico, contraseña, fecha de nacimiento y género.
-* **RF-02 — Inicio de sesión:** El sistema deberá permitir a los usuarios autenticarse mediante su correo electrónico y contraseña.
+* **RF-01 — Registro de usuarios:** El sistema deberá permitir a los usuarios crear una cuenta proporcionando sus datos personales (nombre, correo electrónico, contraseña, fecha de nacimiento y género), asignándoles el rol correspondiente (`PACIENTE` por defecto o `MEDICO`).
+* **RF-02 — Inicio de sesión y autenticación:** El sistema deberá permitir a los usuarios autenticarse mediante su correo electrónico y contraseña, determinando su nivel de acceso según el rol asignado (`PACIENTE` o `MEDICO`/`ADMIN`).
 * **RF-03 — Registro de mediciones:** El sistema deberá permitir al usuario autenticado registrar mediciones biométricas (peso, altura, frecuencia cardíaca y glucosa), restringiendo la entrada únicamente a las variables que influyan en su perfil configurado en el Cuestionario Médico Inicial.
-* **RF-04 — Consulta de historial:** El sistema deberá permitir al usuario autenticado consultar el historial de sus mediciones biométricas registradas.
-* **RF-05 — Modificación de mediciones:** El sistema deberá permitir al usuario autenticado modificar sus mediciones biométricas previamente registradas, garantizando que solo pueda cambiar los datos correspondientes a su perfil médico.
+* **RF-04 — Consulta de historial:** El sistema deberá permitir al usuario autenticado consultar el historial de sus mediciones biométricas registradas ordenadas cronológicamente.
+* **RF-05 — Modificación de mediciones:** El sistema deberá permitir al usuario autenticado modificar sus mediciones biométricas previamente registradas, garantizando que solo pueda cambiar los datos correspondientes a su perfil médico vigente.
 * **RF-06 — Eliminación de mediciones:** El sistema deberá permitir al usuario autenticado eliminar sus mediciones biométricas previamente registradas.
 * **RF-07 — Cálculo de estadísticas:** El sistema deberá permitir calcular estadísticas a partir de las mediciones registradas, incluyendo promedios de frecuencia cardíaca, glucosa e índice de masa corporal (IMC).
-* **RF-08 — Visualización gráfica:** El sistema deberá permitir visualizar mediante gráficos la evolución de las mediciones biométricas registradas a lo largo del tiempo, pudiendo seleccionar diferentes tipos de datos.
-* **RF-09 — Comparación de mediciones:** El sistema deberá permitir seleccionar dos fechas y comparar las mediciones biométricas correspondientes, mostrando las diferencias entre ellas.
-* **RF-10 — Generación de recomendaciones:** El sistema deberá generar recomendaciones generales a partir de los valores registrados de las mediciones biométricas y los resultados obtenidos del análisis.
+* **RF-08 — Visualización gráfica:** El sistema deberá permitir visualizar mediante gráficos interactivos la evolución de las mediciones biométricas registradas a lo largo del tiempo, pudiendo seleccionar diferentes tipos de datos.
+* **RF-09 — Comparación de mediciones:** El sistema deberá permitir seleccionar dos fechas y comparar las mediciones biométricas correspondientes, mostrando las diferencias numéricas exactas entre ellas.
+* **RF-10 — Generación de recomendaciones:** El sistema deberá generar recomendaciones generales automáticas a partir de los valores registrados de las mediciones biométricas y los resultados obtenidos del análisis.
 * **RF-11 — Visualización del progreso:** El sistema deberá permitir al usuario visualizar la evolución general de sus datos biométricos mediante la información histórica registrada.
 * **RF-12 — Cuestionario Médico Inicial y parametrización de variables:** El sistema deberá aplicar un cuestionario inicial al usuario para clasificar su perfil de salud (diabetes, hipertensión, preventivo dual o bienestar) y restringir automáticamente la captura y edición de datos biométricos únicamente a los que tengan impacto clínico en su objetivo de control.
+* **RF-13 — Panel clínico profesional para médicos:** El sistema deberá proveer un panel de acceso exclusivo para usuarios con rol `MEDICO` o `ADMIN`, permitiéndoles visualizar la nómina de pacientes registrados y buscar por nombre o correo.
+* **RF-14 — Consulta de historia clínica consolidada (JOIN):** El sistema deberá permitir al profesional médico consultar la historia clínica consolidada de un paciente mediante una consulta relacional unificada que integre datos de usuario, rol, mediciones históricas y recomendaciones emitidas.
+* **RF-15 — Prescripción de recomendaciones médicas:** El sistema deberá permitir al médico redactar y registrar recomendaciones clínicas personalizadas asociadas directamente al paciente o a una medición específica.
+* **RF-16 — Reportes estadísticos globales agregados:** El sistema deberá proveer al personal médico reportes consolidados utilizando funciones de agregación (`COUNT`, `AVG`, `GROUP BY`), tales como distribución de pacientes por perfil clínico y evolución mensual global de mediciones.
+* **RF-17 — Registro transaccional multi-tabla:** El sistema deberá garantizar la atomicidad transaccional con confirmación (`commit`) y reversión (`rollback`) al ejecutar operaciones que involucren dos o más tablas, como el registro concurrente de una medición y sus recomendaciones asociadas.
+* **RF-18 — Monitoreo de estado del servicio (Healthcheck):** El sistema deberá exponer un endpoint público `GET /health` que valide activamente la conexión con la base de datos MySQL y responda con código HTTP 200 y formato JSON estructurado.
 
+---
 
 # Requisitos no funcionales
 
 * **RNF-01 — Rendimiento:** El sistema deberá mostrar el historial de mediciones en un tiempo máximo de 2 segundos para un usuario que posea hasta 1000 registros almacenados.
-* **RNF-02 — Usabilidad:** Las operaciones principales del sistema, como registrar, consultar, modificar y eliminar una medición, deberán poder realizarse desde la interfaz gráfica sin necesidad de utilizar comandos de consola.
-* **RNF-03 — Seguridad:** Las contraseñas de los usuarios no deberán almacenarse en texto plano y deberán almacenarse utilizando un mecanismo de hashing seguro.
-* **RNF-04 — Privacidad:** El sistema deberá asociar cada medición al usuario autenticado y deberá impedir que un usuario consulte, modifique o elimine mediciones pertenecientes a otro usuario.
-* **RNF-05 — Disponibilidad:** La aplicación deberá poder ejecutarse y utilizarse durante la demostración del proyecto con la configuración de base de datos definida para el entorno de entrega.
-* **RNF-06 — Integridad de datos:** El sistema deberá validar los datos ingresados antes de almacenarlos y no deberá permitir guardar mediciones que incumplan las validaciones definidas por la aplicación.
-* **RNF-07 — Mantenibilidad:** El proyecto deberá mantener una separación entre la interfaz gráfica, la lógica de análisis y el acceso a la base de datos, de acuerdo con la organización utilizada en la implementación.
-
+* **RNF-02 — Usabilidad y Accesibilidad Web:** Las operaciones principales del sistema deberán poder realizarse desde una interfaz web responsiva (HTML5 + Bootstrap 5) accesible desde cualquier navegador moderno y dispositivo, sin necesidad de utilizar comandos de consola ni instalar software cliente.
+* **RNF-03 — Seguridad y Cifrado:** Las contraseñas de los usuarios no deberán almacenarse en texto plano y deberán resguardarse utilizando el mecanismo de hashing BCrypt con salt criptográfico. Las conexiones con la base de datos en producción deberán viajar cifradas mediante SSL (`useSSL=true`) y el tráfico web mediante HTTPS.
+* **RNF-04 — Privacidad y Aislamiento:** El sistema deberá asociar cada medición al usuario autenticado y deberá impedir que un paciente consulte, modifique o elimine mediciones pertenecientes a otro usuario.
+* **RNF-05 — Disponibilidad y Contenerización:** La aplicación deberá estar empaquetada en un contenedor Docker inmutable (multi-stage build con usuario no-root) y poder ejecutarse tanto en la nube (Render / Railway) como en entornos locales (Docker Compose o Kubernetes Minikube).
+* **RNF-06 — Integridad de datos y Validación de Dominio:** El sistema deberá validar los datos ingresados antes de almacenarlos, rechazando valores biológicamente inviables mediante la excepción propia `TuSaludException` y asegurando que cada registro contenga al menos una variable biométrica válida.
+* **RNF-07 — Mantenibilidad y Arquitectura en Capas:** El proyecto deberá mantener una estricta separación de responsabilidades desacoplada mediante interfaces Java en la capa DAO (`IUsuarioDAO`, `IMedicionDAO`, `IRecomendacionDAO`), servicios de negocio (`AnalisisService`, `PerfilMedicoService`), controladores REST y vistas de presentación.
+* **RNF-08 — Configuración Externa:** Todas las credenciales sensibles y parámetros de infraestructura deberán desacoplarse del código fuente y administrarse mediante variables de entorno (`.env`), evitando credenciales en texto plano en el repositorio.

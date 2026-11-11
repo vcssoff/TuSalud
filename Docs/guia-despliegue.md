@@ -142,17 +142,19 @@ docker push ghcr.io/vcssoff/tusalud:1.0.0
 
 ---
 
-### Captura 3: Servicio activo en Render y respuesta de `/health` con HTTPS
-*Muestra el navegador con el candado HTTPS activo en `https://tusalud.onrender.com/health` respondiendo HTTP 200 `{"status":"UP","database":"CONNECTED"}`.*
+### Captura 3: Servicio activo en Render (Live) y URL Pública
+*Muestra el panel de Render con el servicio `tusalud` en estado `Live`, el log de inicio de Javalin en el puerto 8080 y la URL pública asignada `https://tusalud-2mfu.onrender.com`.*
 
-![Captura 3 - Render HTTPS y Health](img/captura-03-render-health.png)
+![Captura 3 - Render Live](img/captura-03-render.png)
 
 ---
 
-### Captura 4: Aplicación Web funcionando (Dashboard de Paciente y Panel Médico)
-*Muestra el panel web responsivo con los gráficos de evolución en Chart.js, el bloqueo dinámico por perfil médico y la consulta consolidada `JOIN` / reporte `GROUP BY`.*
+### Captura 4: Aplicación Web en Producción (Login y Dashboard de Paciente con Chart.js)
+*Muestra el acceso a la plataforma pública en la nube y el panel clínico interactivo con las 21 mediciones biométricas de hipertensión de Francisco Pintaluba, la gráfica evolutiva con Chart.js y la restricción por perfil médico.*
 
-![Captura 4 - Aplicación Web TuSalud](img/captura-04-app-web.png)
+![Captura 4A - Pantalla de Acceso](img/captura-04-login.png)
+
+![Captura 4B - Dashboard Clínico en Producción](img/captura-04-app-web.png)
 
 ---
 
